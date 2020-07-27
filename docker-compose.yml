@@ -1,18 +1,23 @@
 version: "3.1"
+
 services:
   db:
-    image: mongo:4.2
+    image: mongo
     container_name: db
     restart: always
     ports:
       - ${DB_PORT}:27017
+    networks:
+      - production-network
+    volumes:
+      - ./mongo-volume:/data/db 
     environment:
       MONGO_INITDB_DATABASE: ${DB_NAME}
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
 
   app:
-    image: node:latest
+    image: node:alpine
     container_name: app
     restart: always
     env_file:
@@ -21,6 +26,8 @@ services:
       - db
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
+    networks:
+      - production-network
     volumes:
       - .:/usr/src/app # toda essa pasta da app vai para o '/usr/src/app' no container
     working_dir: /usr/src/app
@@ -30,3 +37,7 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+
+networks: 
+    production-network:
+        driver: bridge
